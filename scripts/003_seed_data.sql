@@ -1,0 +1,2 @@
+-- This script will be run after users sign up and confirm their email
+-- For now, it's empty but can be used to seed initial data if needed
