@@ -33,40 +33,52 @@ export default function NewProjectPage() {
   const router = useRouter()
   const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setIsLoading(true)
 
-    try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+  try {
+    const supabase = createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-      if (!user) {
-        throw new Error("Not authenticated")
-      }
+    if (!user) {
+      throw new Error("Not authenticated")
+    }
 
-      const { data, error } = await supabase
-        .from("projects")
-        .insert({
-          name,
-          description,
-          color: selectedColor,
-          owner_id: user.id,
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      toast({
-        title: "Project created",
-        description: "Your project has been created successfully.",
+    // Insertar proyecto
+    const { data, error } = await supabase
+      .from("projects")
+      .insert({
+        name,
+        description,
+        color: selectedColor,
+        owner_id: user.id,
       })
+      .select() // devuelve los campos del registro
+      .single()
 
+    if (error) throw error
+
+    console.log("Project created:", data) // log para depuración
+
+    if (!data?.id) {
+      toast({
+        title: "Error",
+        description: "Project ID not returned from the server",
+        variant: "destructive",
+      })
+      return
+    }
+
+    toast({
+      title: "Project created",
+      description: "Your project has been created successfully.",
+    })
+
+    // Redirigir a la página del proyecto
       router.push(`/dashboard/projects/${data.id}`)
-      router.refresh()
     } catch (error) {
       toast({
         title: "Error",

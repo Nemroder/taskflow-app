@@ -8,6 +8,9 @@ import { ProjectChat } from "@/components/projects/project-chat"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default async function ProjectPage({ params }: { params: { id: string } }) {
+  const resolvedParams = await params;
+  console.log("Params recibidos (id):", resolvedParams.id);
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -17,7 +20,15 @@ export default async function ProjectPage({ params }: { params: { id: string } }
     redirect("/auth/login")
   }
 
-  const { data: project, error } = await supabase.from("projects").select("*").eq("id", params.id).single()
+  const { data: project, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", resolvedParams.id)
+    .single();
+  
+  console.log("User:", user)
+  console.log("Project fetch error:", error)
+  console.log("Project data:", project)
 
   if (error || !project) {
     notFound()
@@ -52,7 +63,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
             </div>
           </div>
         </div>
-        <Link href={`/dashboard/projects/${params.id}/settings`}>
+        <Link href={`/dashboard/projects/${resolvedParams.id}/settings`}>
           <Button variant="outline" size="sm" className="gap-2 bg-transparent">
             <Settings className="w-4 h-4" />
             Settings
@@ -66,10 +77,10 @@ export default async function ProjectPage({ params }: { params: { id: string } }
           <TabsTrigger value="chat">Chat</TabsTrigger>
         </TabsList>
         <TabsContent value="board" className="mt-6">
-          <TaskBoard projectId={params.id} initialTasks={tasks || []} userId={user.id} />
+          <TaskBoard projectId={resolvedParams.id} initialTasks={tasks || []} userId={user.id} />
         </TabsContent>
         <TabsContent value="chat" className="mt-6">
-          <ProjectChat projectId={params.id} userId={user.id} />
+          <ProjectChat projectId={resolvedParams.id} userId={user.id} />
         </TabsContent>
       </Tabs>
     </div>
